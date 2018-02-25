@@ -4,6 +4,7 @@ using OpenSage.Data;
 using OpenSage.Data.Rep;
 using OpenSage.Gui;
 using OpenSage.Gui.Wnd;
+using OpenSage.Gui.Wnd.Controls;
 using OpenSage.Network;
 
 namespace OpenSage.Mods.Generals
@@ -12,11 +13,11 @@ namespace OpenSage.Mods.Generals
     {
         private static bool _doneMainMenuFadeIn;
 
-        public static void W3DMainMenuInit(WndTopLevelWindow window, Game game)
+        public static void W3DMainMenuInit(Window window, Game game)
         {
             // We'll show these later via window transitions.
-            window.Root.FindChild("MainMenu.wnd:MainMenuRuler").Hide();
-            window.Root.FindChild("MainMenu.wnd:MainMenuRuler").Opacity = 0;
+            window.Controls.FindControl("MainMenu.wnd:MainMenuRuler").Hide();
+            window.Controls.FindControl("MainMenu.wnd:MainMenuRuler").Opacity = 0;
 
             var initiallyHiddenSections = new[]
             {
@@ -29,40 +30,40 @@ namespace OpenSage.Mods.Generals
 
             foreach (var controlName in initiallyHiddenSections)
             {
-                var control = window.Root.FindChild(controlName);
+                var control = window.Controls.FindControl(controlName);
                 control.Opacity = 0;
 
-                foreach (var button in control.Children.First().Children)
+                foreach (var button in control.Controls.First().Controls)
                 {
                     button.Opacity = 0;
                     button.TextOpacity = 0;
                 }
             }
 
-            window.Root.FindChild("MainMenu.wnd:ButtonUSARecentSave").Hide();
-            window.Root.FindChild("MainMenu.wnd:ButtonUSALoadGame").Hide();
+            window.Controls.FindControl("MainMenu.wnd:ButtonUSARecentSave").Hide();
+            window.Controls.FindControl("MainMenu.wnd:ButtonUSALoadGame").Hide();
 
-            window.Root.FindChild("MainMenu.wnd:ButtonGLARecentSave").Hide();
-            window.Root.FindChild("MainMenu.wnd:ButtonGLALoadGame").Hide();
+            window.Controls.FindControl("MainMenu.wnd:ButtonGLARecentSave").Hide();
+            window.Controls.FindControl("MainMenu.wnd:ButtonGLALoadGame").Hide();
 
-            window.Root.FindChild("MainMenu.wnd:ButtonChinaRecentSave").Hide();
-            window.Root.FindChild("MainMenu.wnd:ButtonChinaLoadGame").Hide();
+            window.Controls.FindControl("MainMenu.wnd:ButtonChinaRecentSave").Hide();
+            window.Controls.FindControl("MainMenu.wnd:ButtonChinaLoadGame").Hide();
 
             // TODO: Show faction icons when WinScaleUpTransition is implemented.
 
             _doneMainMenuFadeIn = false;
         }
 
-        public static void W3DNoDraw(WndWindow element, Game game)
+        public static void W3DNoDraw(Control control, DrawingContext2D drawingContext)
         {
             
         }
 
-        public static void MainMenuSystem(WndWindow element, WndWindowMessage message, UIElementCallbackContext context)
+        public static void MainMenuSystem(Control control, WndWindowMessage message, ControlCallbackContext context)
         {
             void QueueTransition(string transition)
             {
-                context.WindowManager.TransitionManager.QueueTransition(null, element.Window, transition);
+                context.WindowManager.TransitionManager.QueueTransition(null, control.Window, transition);
             }
 
             switch (message.MessageType)
@@ -110,32 +111,32 @@ namespace OpenSage.Mods.Generals
 
                         case "MainMenu.wnd:ButtonExit":
                             var exitWindow = context.WindowManager.PushWindow(@"Menus\QuitMessageBox.wnd");
-                            exitWindow.Root.FindChild("QuitMessageBox.wnd:StaticTextTitle").Text = "EXIT?";
-                            exitWindow.Root.FindChild("QuitMessageBox.wnd:StaticTextTitle").TextAlignment = TextAlignment.Leading;
-                            exitWindow.Root.FindChild("QuitMessageBox.wnd:StaticTextMessage").Text = "Are you sure you want to exit?";
-                            exitWindow.Root.FindChild("QuitMessageBox.wnd:ButtonOk").Show();
-                            exitWindow.Root.FindChild("QuitMessageBox.wnd:ButtonOk").Text = "YES";
-                            exitWindow.Root.FindChild("QuitMessageBox.wnd:ButtonCancel").Show();
-                            exitWindow.Root.FindChild("QuitMessageBox.wnd:ButtonCancel").Text = "NO";
+                            exitWindow.Controls.FindControl("QuitMessageBox.wnd:StaticTextTitle").Text = "EXIT?";
+                            ((Label) exitWindow.Controls.FindControl("QuitMessageBox.wnd:StaticTextTitle")).TextAlignment = TextAlignment.Leading;
+                            exitWindow.Controls.FindControl("QuitMessageBox.wnd:StaticTextMessage").Text = "Are you sure you want to exit?";
+                            exitWindow.Controls.FindControl("QuitMessageBox.wnd:ButtonOk").Show();
+                            exitWindow.Controls.FindControl("QuitMessageBox.wnd:ButtonOk").Text = "YES";
+                            exitWindow.Controls.FindControl("QuitMessageBox.wnd:ButtonCancel").Show();
+                            exitWindow.Controls.FindControl("QuitMessageBox.wnd:ButtonCancel").Text = "NO";
                             break;
                     }
                     break;
             }
         }
 
-        public static void MainMenuInput(WndWindow element, WndWindowMessage message, UIElementCallbackContext context)
+        public static void MainMenuInput(Control control, WndWindowMessage message, ControlCallbackContext context)
         {
             // Any input at all (mouse, keyboard) will trigger the main menu fade-in.
             if (!_doneMainMenuFadeIn)
             {
-                context.WindowManager.TransitionManager.QueueTransition(null, element.Window, "MainMenuFade");
-                context.WindowManager.TransitionManager.QueueTransition(null, element.Window, "MainMenuDefaultMenu");
-                element.Window.Root.FindChild("MainMenu.wnd:MainMenuRuler").Show();
+                context.WindowManager.TransitionManager.QueueTransition(null, control.Window, "MainMenuFade");
+                context.WindowManager.TransitionManager.QueueTransition(null, control.Window, "MainMenuDefaultMenu");
+                control.Window.Controls.FindControl("MainMenu.wnd:MainMenuRuler").Show();
                 _doneMainMenuFadeIn = true;
             }
         }
 
-        public static void QuitMessageBoxSystem(WndWindow element, WndWindowMessage message, UIElementCallbackContext context)
+        public static void QuitMessageBoxSystem(Control control, WndWindowMessage message, ControlCallbackContext context)
         {
             switch (message.MessageType)
             {
@@ -150,7 +151,7 @@ namespace OpenSage.Mods.Generals
             }
         }
 
-        public static void OptionsMenuSystem(WndWindow element, WndWindowMessage message, UIElementCallbackContext context)
+        public static void OptionsMenuSystem(Control control, WndWindowMessage message, ControlCallbackContext context)
         {
             switch (message.MessageType)
             {
@@ -167,19 +168,19 @@ namespace OpenSage.Mods.Generals
 
         private static FileSystem GetReplaysFileSystem(Game game) => new FileSystem(Path.Combine(game.UserDataFolder, "Replays"));
 
-        public static void ReplayMenuInit(WndTopLevelWindow window, Game game)
+        public static void ReplayMenuInit(Window window, Game game)
         {
-            var listBox = (WndWindowListBox) window.Root.FindChild("ReplayMenu.wnd:ListboxReplayFiles");
+            var listBox = (ListBox) window.Controls.FindControl("ReplayMenu.wnd:ListboxReplayFiles");
 
             using (var fileSystem = GetReplaysFileSystem(game))
             {
-                listBox.ListBoxItems.Clear();
+                listBox.Items.Clear();
 
                 foreach (var file in fileSystem.Files)
                 {
                     var replayFile = ReplayFile.FromFileSystemEntry(file, onlyHeader: true);
 
-                    listBox.ListBoxItems.Add(new WndListBoxItem
+                    listBox.Items.Add(new ListBoxItem
                     {
                         DataItem = file.FilePath,
                         ColumnData = new[]
@@ -194,12 +195,12 @@ namespace OpenSage.Mods.Generals
             }
         }
 
-        public static void ReplayMenuShutdown(WndTopLevelWindow window, Game game)
+        public static void ReplayMenuShutdown(Window window, Game game)
         {
             // TODO
         }
 
-        public static void ReplayMenuSystem(WndWindow element, WndWindowMessage message, UIElementCallbackContext context)
+        public static void ReplayMenuSystem(Control control, WndWindowMessage message, ControlCallbackContext context)
         {
             switch (message.MessageType)
             {
@@ -208,11 +209,11 @@ namespace OpenSage.Mods.Generals
                     {
                         case "ReplayMenu.wnd:ButtonLoadReplay":
                             // TODO: Handle no selected item.
-                            var listBox = (WndWindowListBox) element.Window.Root.FindChild("ReplayMenu.wnd:ListboxReplayFiles");
+                            var listBox = (ListBox) control.Window.Controls.FindControl("ReplayMenu.wnd:ListboxReplayFiles");
                             ReplayFile replayFile;
                             using (var fileSystem = GetReplaysFileSystem(context.Game))
                             {
-                                var replayFileEntry = fileSystem.GetFile((string) listBox.ListBoxItems[listBox.SelectedIndex].DataItem);
+                                var replayFileEntry = fileSystem.GetFile((string) listBox.Items[listBox.SelectedIndex].DataItem);
                                 replayFile = ReplayFile.FromFileSystemEntry(replayFileEntry);
                             }
 
@@ -239,19 +240,19 @@ namespace OpenSage.Mods.Generals
             }
         }
 
-        public static void PassSelectedButtonsToParentSystem(WndWindow element, WndWindowMessage message, UIElementCallbackContext context)
+        public static void PassSelectedButtonsToParentSystem(Control control, WndWindowMessage message, ControlCallbackContext context)
         {
             if (message.MessageType != WndWindowMessageType.SelectedButton)
             {
                 return;
             }
 
-            element.Parent.SystemCallback.Invoke(element.Parent, message, context);
+            control.Parent.SystemCallback.Invoke(control.Parent, message, context);
         }
 
-        public static void PassMessagesToParentSystem(WndWindow element, WndWindowMessage message, UIElementCallbackContext context)
+        public static void PassMessagesToParentSystem(Control control, WndWindowMessage message, ControlCallbackContext context)
         {
-            element.Parent.SystemCallback.Invoke(element.Parent, message, context);
+            control.Parent.SystemCallback.Invoke(control.Parent, message, context);
         }
     }
 }
